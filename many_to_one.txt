@@ -1,0 +1,40 @@
+this file houses the logic and the SQL commands required to make a many to many relationship from csv file
+NOTE: this procedure is only allowed if the data from the csv file is all you need. If it is not additional commands will be 
+required to add extra data which are not in the csv file.
+
+
+1. we need to copy the csv file into a dummy table
+# creating a table that will house name and gender as well as the gender_id
+CREATE TABLE dummy(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(122),
+    gender CHAR(1),
+    gender_id integer
+);
+
+2. next is to create a table that will have the distinct number, it will serve as the foreign table
+# this table will have the gender and an id.
+CREATE TABLE gender(
+    id sERIAL PRIMARY KEY,
+    gender CHAR(1)
+);
+
+3. the last table would be the child table this table will be a replica of the dummy table without the gender column
+CREATE TABLE name(
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(122),
+    gender_id integer
+);
+
+the commands 
+\copy dummy(name, gender) from 'prac.csv' delimiter ',' csv;
+
+INSERT INTO gender(gender) SELECT DISTINCT gender FROM dummy;
+
+UPDATE dummy SET gender_id = (select id from gender where gender.gender = dummy.gender);
+
+INSERT INTO name(name, gender_id) SELECT name, gender_id FROM dummy;
+
+
+to see both tables combined
+select name.name as name, gender.gender as gender from name join gender on gender.id=name.gender_id;
